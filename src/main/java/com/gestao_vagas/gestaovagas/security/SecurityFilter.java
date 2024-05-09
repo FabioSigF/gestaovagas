@@ -25,19 +25,21 @@ public class SecurityFilter extends OncePerRequestFilter {
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
-    
-        String header = request.getHeader("Authorization");
-        if(header != null) {
-          var subjectToken = this.jwtProvider.validateToken(header);
-          if(subjectToken.isEmpty()){
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-          }
-          request.setAttribute("company_id", subjectToken);
-          UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(subjectToken, null, Collections.emptyList());
-          SecurityContextHolder.getContext().setAuthentication(auth);
-        }
-        filterChain.doFilter(request, response);
+
+    SecurityContextHolder.getContext().setAuthentication(null);
+    String header = request.getHeader("Authorization");
+    if (header != null) {
+      var subjectToken = this.jwtProvider.validateToken(header);
+      if (subjectToken.isEmpty()) {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        return;
+      }
+      request.setAttribute("company_id", subjectToken);
+      UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(subjectToken, null,
+          Collections.emptyList());
+      SecurityContextHolder.getContext().setAuthentication(auth);
+    }
+    filterChain.doFilter(request, response);
 
     throw new UnsupportedOperationException("Unimplemented method 'doFilterInternal'");
   }
